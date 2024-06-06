@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-import matplotlib.pyplot as plt
-import numpy as np
 
 st.title("Analyse de la Représentativité des Pesées sur Ligne - Conformité WELMEC")
 
@@ -80,11 +78,7 @@ if suivi_perte_matiere and suivi_acquisitions:
 
     # Histogramme des pesées
     st.subheader("Histogramme des Pesées")
-    fig, ax = plt.subplots()
-    ax.hist(df_merged['Valeur'], bins=20)
-    ax.set_xlabel("Poids Net (g)")
-    ax.set_ylabel("Nombre de Piluliers")
-    st.pyplot(fig)
+    st.bar_chart(df_merged['Valeur'].value_counts().sort_index())
 
     # Affichage des justifications WELMEC
     st.subheader("Justifications WELMEC")
@@ -104,4 +98,3 @@ if suivi_perte_matiere and suivi_acquisitions:
     st.markdown("- **Représentativité des pesées:** Comparez le nombre de pesées attendues avec le nombre de pesées réelles. Si la différence est importante, cela peut indiquer que la fréquence des pesées est insuffisante.")
     st.markdown("- **Conformité WELMEC:**  Le code Python calcule les limites de tolérance WELMEC (TNE, TU1, TU2) et permet de vérifier si les pesées sont conformes aux exigences WELMEC.  ")
     st.write("Utilisez ce code pour analyser vos données et justifier la conformité de vos contrôles de masse nette.")
-
