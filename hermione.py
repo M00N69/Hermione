@@ -82,7 +82,18 @@ if suivi_perte_matiere and suivi_acquisitions:
 
         # Histogramme des pesées
         st.subheader("Histogramme des Pesées")
-        st.bar_chart(df_merged['Valeur'].value_counts().sort_index())
+
+        # 1. Get the value counts:
+        value_counts = df_merged['Valeur'].value_counts().sort_index()
+
+        # 2. Create a DataFrame with 'Valeur' and 'Count' columns:
+        histogram_data = pd.DataFrame({
+            'Valeur': value_counts.index,
+            'Count': value_counts.values
+        })
+
+        # 3. Display the bar chart:
+        st.bar_chart(histogram_data)
 
         # Affichage des justifications WELMEC
         st.subheader("Justifications WELMEC")
