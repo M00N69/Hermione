@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import numpy as np
+import matplotlib.pyplot as plt
 
 st.title("Analyse de la Représentativité des Pesées sur Ligne - Conformité WELMEC")
 
@@ -99,6 +100,26 @@ if suivi_perte_matiere and suivi_acquisitions:
         ]
         percentage_close = len(close_to_expected) / len(df_production_stats) * 100
         st.markdown("**Pourcentage des OF avec un nombre de pesées proche du nombre attendu:** {:.1f}%".format(percentage_close))
+
+        # ---  Visualizations ---
+        
+        #  1.  Histogram of Weighings per Hour:
+        st.subheader("Histogramme des pesées par heure")
+        plt.figure(figsize=(10, 6))  # Set figure size
+        plt.hist(df_pesées_par_heure['Nombre de pesées'], bins=10, edgecolor='black')
+        plt.xlabel("Nombre de pesées")
+        plt.ylabel("Fréquence")
+        plt.title("Distribution des pesées par heure")
+        st.pyplot(plt)
+
+        #  2.  Scatter Plot of Expected vs. Actual Weighings:
+        st.subheader("Pesées attendues vs. réelles")
+        plt.figure(figsize=(10, 6))  # Set figure size
+        plt.scatter(df_production_stats['Pesées attendues'], df_production_stats['Nombre de pesées'])
+        plt.xlabel("Pesées attendues")
+        plt.ylabel("Nombre de pesées réelles")
+        plt.title("Comparaison des pesées attendues et réelles")
+        st.pyplot(plt)
 
 
         # Affichage des justifications WELMEC
