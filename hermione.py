@@ -105,3 +105,5 @@ if suivi_perte_matiere and suivi_acquisitions:
         
     except ImportError as e:
         st.error(f"An error occurred while loading the Excel files: {e}. Please ensure that the 'openpyxl' library is installed.")
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
