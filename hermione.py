@@ -4,16 +4,6 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Install openpyxl if it's not already installed
-try:
-    import openpyxl
-except ImportError:
-    st.write("Installing openpyxl...")
-    # Install the package using pip in Streamlit Cloud
-    # This line will install openpyxl if it's missing
-    pip.main(['install', 'openpyxl'])
-    import openpyxl
-
 st.title("Analyse de la Représentativité des Pesées sur Ligne - Conformité WELMEC")
 
 # Upload des fichiers Excel
@@ -110,7 +100,7 @@ if suivi_perte_matiere and suivi_acquisitions:
 
         st.markdown("**Conclusions :**")
         st.markdown("- **Représentativité des pesées:** Comparez le nombre de pesées attendues avec le nombre de pesées réelles. Si la différence est importante, cela peut indiquer que la fréquence des pesées est insuffisante.")
-        st.markdown("- **Conformité WELMEC:**  Le code Python calcule les limites de tolérance WELMEC (TNE, TU1, TU2) et permet de vérifier si les pesées sont conformes aux exigences WELMEC.  ")
+        st.markdown("- **Conformité WELMEC:**  Le code Python calcule les limites de tolérance WELMEC (TNE, TU1, TU2) et permet de vérifier si les pesées sont conformes aux exigences WELMEC.")
         st.write("Utilisez ce code pour analyser vos données et justifier la conformité de vos contrôles de masse nette.")
         
     except ImportError as e:
