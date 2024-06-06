@@ -46,7 +46,7 @@ if suivi_perte_matiere and suivi_acquisitions:
         df_production_stats = df_merged.groupby('Of').agg({
             'Qté réelle': 'sum',
             'Qté lanc.': 'sum',
-            'Valeur': ['mean', 'std']
+            'Valeur': ['mean', 'std']  # Assuming the correct column name is 'Valeur'
         }).reset_index()
         df_production_stats.columns = ['Of', 'Qté réelle', 'Qté lanc.', 'Poids moyen (g)', 'Ecart type (g)']
 
