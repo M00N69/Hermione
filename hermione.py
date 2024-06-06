@@ -103,3 +103,10 @@ if suivi_perte_matiere and suivi_acquisitions:
         
     except ImportError as e:
         st.error(f"An error occurred while loading the Excel files: {e}. Please ensure that the 'openpyxl' library is installed.")
+   st.markdown("**Conclusions :**")
+        st.markdown("- **Représentativité des pesées:** Comparez le nombre de pesées attendues avec le nombre de pesées réelles. Si la différence est importante, cela peut indiquer que la fréquence des pesées est insuffisante.")
+        st.markdown("- **Conformité WELMEC:**  Le code Python calcule les limites de tolérance WELMEC (TNE, TU1, TU2) et permet de vérifier si les pesées sont conformes aux exigences WELMEC.  ")
+        st.write("Utilisez ce code pour analyser vos données et justifier la conformité de vos contrôles de masse nette.")
+        
+    except ImportError as e:
+        st.error(f"An error occurred while loading the Excel files: {e}. Please ensure that the 'openpyxl' library is installed.")
