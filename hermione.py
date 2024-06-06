@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+from datetime import datetime
+import numpy as np
 import matplotlib.pyplot as plt
 
 st.title("Analyse de la Représentativité des Pesées sur Ligne - Conformité WELMEC")
@@ -24,66 +26,109 @@ if suivi_perte_matiere and suivi_acquisitions:
         df_merged = pd.merge(df_acquisitions, df_perte_matiere, on='Of')
 
         # Affichage des données fusionnées
-        st.subheader("Données fusionnées")
         st.dataframe(df_merged)
 
         # Calcul du nombre de pesées par heure et par OF
-        df_pesees_par_heure = df_merged.groupby(['Of', 'Date', 'Heure']).size().reset_index(name='Nombre de pesees')
+        df_pesées_par_heure = df_merged.groupby(['Of', 'Date', 'Heure']).size().reset_index(name='Nombre de pesées')
 
         # Affichage des pesées par heure
         st.subheader("Nombre de pesées par heure")
-        st.dataframe(df_pesees_par_heure)
+        st.dataframe(df_pesées_par_heure)
 
         # Calcul du nombre de pesées par OF
-        df_pesees_par_of = df_pesees_par_heure.groupby('Of').agg({'Nombre de pesees': 'sum'}).reset_index()
+        df_pesées_par_of = df_pesées_par_heure.groupby('Of').agg({'Nombre de pesées': 'sum'}).reset_index()
 
         # Affichage des pesées par OF
         st.subheader("Nombre total de pesées par OF")
-        st.dataframe(df_pesees_par_of)
+        st.dataframe(df_pesées_par_of)
 
         # Calcul des statistiques de la production
         df_production_stats = df_merged.groupby('Of').agg({
             'Qté réelle': 'sum',
             'Qté lanc.': 'sum',
-            'Valeur 01/01/24 00:00 - 01/06/24 00:00': ['mean', 'std']  # Adjusted the column name here
+            'Mesure valeur': ['mean', 'std']  # Using 'Mesure valeur' as the column for calculations
         }).reset_index()
         df_production_stats.columns = ['Of', 'Qté réelle', 'Qté lanc.', 'Poids moyen (g)', 'Ecart type (g)']
+
+        # Calcul de la durée de production (en heures)
+        df_merged['Date de fin d\'OF'] = pd.to_datetime(df_merged['Date de fin d\'OF'])
+        df_production_stats['Durée production (heures)'] = (
+            df_merged.groupby('Of')['Date de fin d\'OF'].max() - 
+            df_merged.groupby('Of')['Date de fin d\'OF'].min()
+        ).dt.total_seconds() / 3600
+
+        # Affichage des statistiques de production
+        st.subheader("Statistiques de Production")
+        st.dataframe(df_production_stats)
+
+        # Calcul du nombre de pesées attendu
+        df_production_stats['Pesées attendues'] = (
+            df_pesées_par_heure.groupby('Of')['Nombre de pesées'].mean() * 
+            df_production_stats['Durée production (heures)']
+        ).values
+
+        # Affichage du nombre de pesées attendu
+        st.subheader("Pesées attendues vs. réelles")
+        st.dataframe(df_production_stats)
 
         # Calcul des limites de tolérance WELMEC
         df_production_stats['TNE (g)'] = df_production_stats['Poids moyen (g)'] * 0.09
         df_production_stats['TU1 (g)'] = df_production_stats['Poids moyen (g)'] - df_production_stats['TNE (g)']
         df_production_stats['TU2 (g)'] = df_production_stats['Poids moyen (g)'] - 2 * df_production_stats['TNE (g)']
 
-        # Affichage des statistiques de production
-        st.subheader("Statistiques de Production")
-        st.dataframe(df_production_stats)
-
         # Affichage des limites de tolérance
         st.subheader("Limites de Tolérance WELMEC")
         st.dataframe(df_production_stats[['Of', 'TNE (g)', 'TU1 (g)', 'TU2 (g)']])
 
-        # Key Metrics for Assessing Sampling Representativeness
-        st.subheader("Key Metrics for Assessing Sampling Representativeness")
+        #  ---  Key Metrics for Assessing Sampling Representativeness --- 
+        
+        # 1. Mean Number of Weighings Per Hour:
+        mean_weighings_per_hour = df_pesées_par_heure['Nombre de pesées'].mean()
+        st.markdown("**Moyenne des pesées par heure:** {}".format(mean_weighings_per_hour))
 
-        # 1. Mean Number of Weighings Per Hour
-        mean_weighings_per_hour = df_pesees_par_heure['Nombre de pesees'].mean()
-        st.markdown(f"**Moyenne des pesées par heure:** {mean_weighings_per_hour:.2f}")
+        # 2. Standard Deviation of Weighings Per Hour:
+        std_weighings_per_hour = df_pesées_par_heure['Nombre de pesées'].std()
+        st.markdown("**Écart type des pesées par heure:** {}".format(std_weighings_per_hour))
 
-        # 2. Standard Deviation of Weighings Per Hour
-        std_weighings_per_hour = df_pesees_par_heure['Nombre de pesees'].std()
-        st.markdown(f"**Écart type des pesées par heure:** {std_weighings_per_hour:.2f}")
+        # 3.  Average Production Time Per Order:
+        average_production_time = df_production_stats['Durée production (heures)'].mean()
+        st.markdown("**Durée moyenne de production par OF:** {:.2f} heures".format(average_production_time))
 
-        # Visualizations
-        st.subheader("Visualizations")
+        # 4.  Percent of Orders With 'Expected Weighings' Close to Actual Weighings:
+        close_to_expected = df_production_stats[
+            abs(df_production_stats['Pesées attendues'] - df_production_stats['Nombre de pesées']) < 0.1 * df_production_stats['Pesées attendues']
+        ]
+        percentage_close = len(close_to_expected) / len(df_production_stats) * 100
+        st.markdown("**Pourcentage des OF avec un nombre de pesées proche du nombre attendu:** {:.1f}%".format(percentage_close))
 
-        # 1. Histogram of Weighings per Hour
+        # ---  Visualizations ---
+        
+        #  1.  Histogram of Weighings per Hour:
         st.subheader("Histogramme des pesées par heure")
-        fig, ax = plt.subplots()
-        ax.hist(df_pesees_par_heure['Nombre de pesees'], bins=10, edgecolor='black')
-        ax.set_xlabel("Nombre de pesées")
-        ax.set_ylabel("Fréquence")
-        ax.set_title("Distribution des pesées par heure")
-        st.pyplot(fig)
+        plt.figure(figsize=(10, 6))  # Set figure size
+        plt.hist(df_pesées_par_heure['Nombre de pesées'], bins=10, edgecolor='black')
+        plt.xlabel("Nombre de pesées")
+        plt.ylabel("Fréquence")
+        plt.title("Distribution des pesées par heure")
+        st.pyplot(plt)
+
+        #  2.  Scatter Plot of Expected vs. Actual Weighings:
+        st.subheader("Pesées attendues vs. réelles")
+        plt.figure(figsize=(10, 6))  # Set figure size
+        plt.scatter(df_production_stats['Pesées attendues'], df_production_stats['Nombre de pesées'])
+        plt.xlabel("Pesées attendues")
+        plt.ylabel("Nombre de pesées réelles")
+        plt.title("Comparaison des pesées attendues et réelles")
+        st.pyplot(plt)
+
+        #  3.  Box Plot of Weighing Distribution for Each Order:
+        st.subheader("Distribution des Pesées par OF")
+        plt.figure(figsize=(10, 6))
+        plt.boxplot(df_merged.groupby('Of')['Mesure valeur'].apply(list), labels=df_merged['Of'].unique())  # Use 'Mesure valeur'
+        plt.xlabel("OF")
+        plt.ylabel("Poids net (g)")
+        plt.title("Distribution des pesées par ordre de fabrication")
+        st.pyplot(plt)
 
         # Affichage des justifications WELMEC
         st.subheader("Justifications WELMEC")
@@ -103,9 +148,8 @@ if suivi_perte_matiere and suivi_acquisitions:
         st.markdown("- **Représentativité des pesées:** Comparez le nombre de pesées attendues avec le nombre de pesées réelles. Si la différence est importante, cela peut indiquer que la fréquence des pesées est insuffisante.")
         st.markdown("- **Conformité WELMEC:** Le code Python calcule les limites de tolérance WELMEC (TNE, TU1, TU2) et permet de vérifier si les pesées sont conformes aux exigences WELMEC.")
         st.write("Utilisez ce code pour analyser vos données et justifier la conformité de vos contrôles de masse nette.")
-
+        
     except ImportError as e:
         st.error(f"An error occurred while loading the Excel files: {e}. Please ensure that the 'openpyxl' library is installed.")
     except Exception as e:
         st.error(f"An error occurred: {e}")
-
