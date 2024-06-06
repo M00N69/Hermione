@@ -16,11 +16,12 @@ if suivi_perte_matiere and suivi_acquisitions:
     df_acquisitions = pd.read_excel(suivi_acquisitions)
 
     # Séparation de la colonne d'acquisition en date et heure
-    df_acquisitions['Date'] = pd.to_datetime(df_acquisitions['Heure acquisition']).dt.date
-    df_acquisitions['Heure'] = pd.to_datetime(df_acquisitions['Heure acquisition']).dt.time
+    df_acquisitions['Heure acquisition'] = pd.to_datetime(df_acquisitions['Heure acquisition'])
+    df_acquisitions['Date'] = df_acquisitions['Heure acquisition'].dt.date
+    df_acquisitions['Heure'] = df_acquisitions['Heure acquisition'].dt.time
 
     # Fusion des deux DataFrames
-    df_merged = pd.merge(df_acquisitions, df_perte_matiere, left_on='Of', right_on='Of')
+    df_merged = pd.merge(df_acquisitions, df_perte_matiere, on='Of')
 
     # Affichage des données fusionnées
     st.dataframe(df_merged)
@@ -40,26 +41,36 @@ if suivi_perte_matiere and suivi_acquisitions:
     st.dataframe(df_pesées_par_of)
 
     # Calcul des statistiques de la production
-    df_production_stats = df_merged.groupby('Of').agg({'Qté réelle': 'sum', 'Qté lanc.': 'sum', 'Mesure valeur': ['mean', 'std']}).reset_index()
+    df_production_stats = df_merged.groupby('Of').agg({
+        'Qté réelle': 'sum',
+        'Qté lanc.': 'sum',
+        'Valeur': ['mean', 'std']
+    }).reset_index()
     df_production_stats.columns = ['Of', 'Qté réelle', 'Qté lanc.', 'Poids moyen (g)', 'Ecart type (g)']
 
     # Calcul de la durée de production (en heures)
-    df_production_stats['Date de fin d'OF'] = pd.to_datetime(df_production_stats['Date de fin d'OF'])
-    df_production_stats['Durée production (heures)'] = (df_production_stats['Date de fin d'OF'] - df_production_stats['Date de fin d'OF'].dt.date).dt.total_seconds() / 3600
+    df_merged['Date de fin d\'OF'] = pd.to_datetime(df_merged['Date de fin d\'OF'])
+    df_production_stats['Durée production (heures)'] = (
+        df_merged.groupby('Of')['Date de fin d\'OF'].max() - 
+        df_merged.groupby('Of')['Date de fin d\'OF'].min()
+    ).dt.total_seconds() / 3600
 
     # Affichage des statistiques de production
     st.subheader("Statistiques de Production")
     st.dataframe(df_production_stats)
 
     # Calcul du nombre de pesées attendu
-    df_production_stats['Pesées attendues'] = df_pesées_par_heure.groupby('Of').agg({'Nombre de pesées': 'mean'})['Nombre de pesées'] * df_production_stats['Durée production (heures)']
+    df_production_stats['Pesées attendues'] = (
+        df_pesées_par_heure.groupby('Of')['Nombre de pesées'].mean() * 
+        df_production_stats['Durée production (heures)']
+    ).values
 
     # Affichage du nombre de pesées attendu
     st.subheader("Pesées attendues vs. réelles")
     st.dataframe(df_production_stats)
 
     # Calcul des limites de tolérance WELMEC
-    df_production_stats['TNE (g)'] = df_production_stats['Poids moyen (g)'] * 0.09  # Calcul TNE en utilisant 9% pour les piluliers
+    df_production_stats['TNE (g)'] = df_production_stats['Poids moyen (g)'] * 0.09
     df_production_stats['TU1 (g)'] = df_production_stats['Poids moyen (g)'] - df_production_stats['TNE (g)']
     df_production_stats['TU2 (g)'] = df_production_stats['Poids moyen (g)'] - 2 * df_production_stats['TNE (g)']
 
@@ -70,7 +81,7 @@ if suivi_perte_matiere and suivi_acquisitions:
     # Histogramme des pesées
     st.subheader("Histogramme des Pesées")
     fig, ax = plt.subplots()
-    ax.hist(df_merged['Mesure valeur'], bins=20)
+    ax.hist(df_merged['Valeur'], bins=20)
     ax.set_xlabel("Poids Net (g)")
     ax.set_ylabel("Nombre de Piluliers")
     st.pyplot(fig)
@@ -93,3 +104,4 @@ if suivi_perte_matiere and suivi_acquisitions:
     st.markdown("- **Représentativité des pesées:** Comparez le nombre de pesées attendues avec le nombre de pesées réelles. Si la différence est importante, cela peut indiquer que la fréquence des pesées est insuffisante.")
     st.markdown("- **Conformité WELMEC:**  Le code Python calcule les limites de tolérance WELMEC (TNE, TU1, TU2) et permet de vérifier si les pesées sont conformes aux exigences WELMEC.  ")
     st.write("Utilisez ce code pour analyser vos données et justifier la conformité de vos contrôles de masse nette.")
+
