@@ -80,47 +80,48 @@ if suivi_perte_matiere and suivi_acquisitions:
         st.subheader("Limites de Tolérance WELMEC")
         st.dataframe(df_production_stats[['Of', 'TNE (g)', 'TU1 (g)', 'TU2 (g)']])
 
-        #  ---  Key Metrics for Assessing Sampling Representativeness --- 
-        
-        # 1. Mean Number of Weighings Per Hour:
+        # Key Metrics for Assessing Sampling Representativeness
+        st.subheader("Key Metrics for Assessing Sampling Representativeness")
+
+        # 1. Mean Number of Weighings Per Hour
         mean_weighings_per_hour = df_pesées_par_heure['Nombre de pesées'].mean()
-        st.markdown("**Moyenne des pesées par heure:** {}".format(mean_weighings_per_hour))
+        st.markdown(f"**Moyenne des pesées par heure:** {mean_weighings_per_hour:.2f}")
 
-        # 2. Standard Deviation of Weighings Per Hour:
+        # 2. Standard Deviation of Weighings Per Hour
         std_weighings_per_hour = df_pesées_par_heure['Nombre de pesées'].std()
-        st.markdown("**Écart type des pesées par heure:** {}".format(std_weighings_per_hour))
+        st.markdown(f"**Écart type des pesées par heure:** {std_weighings_per_hour:.2f}")
 
-        # 3.  Average Production Time Per Order:
+        # 3. Average Production Time Per Order
         average_production_time = df_production_stats['Durée production (heures)'].mean()
-        st.markdown("**Durée moyenne de production par OF:** {:.2f} heures".format(average_production_time))
+        st.markdown(f"**Durée moyenne de production par OF:** {average_production_time:.2f} heures")
 
-        # 4.  Percent of Orders With 'Expected Weighings' Close to Actual Weighings:
+        # 4. Percent of Orders With 'Expected Weighings' Close to Actual Weighings
         close_to_expected = df_production_stats[
             abs(df_production_stats['Pesées attendues'] - df_production_stats['Nombre de pesées']) < 0.1 * df_production_stats['Pesées attendues']
         ]
         percentage_close = len(close_to_expected) / len(df_production_stats) * 100
-        st.markdown("**Pourcentage des OF avec un nombre de pesées proche du nombre attendu:** {:.1f}%".format(percentage_close))
+        st.markdown(f"**Pourcentage des OF avec un nombre de pesées proche du nombre attendu:** {percentage_close:.1f}%")
 
-        # ---  Visualizations ---
-        
-        #  1.  Histogram of Weighings per Hour:
+        # Visualizations
+        st.subheader("Visualizations")
+
+        # 1. Histogram of Weighings per Hour
         st.subheader("Histogramme des pesées par heure")
-        plt.figure(figsize=(10, 6))  # Set figure size
-        plt.hist(df_pesées_par_heure['Nombre de pesées'], bins=10, edgecolor='black')
-        plt.xlabel("Nombre de pesées")
-        plt.ylabel("Fréquence")
-        plt.title("Distribution des pesées par heure")
-        st.pyplot(plt)
+        fig, ax = plt.subplots()
+        ax.hist(df_pesées_par_heure['Nombre de pesées'], bins=10, edgecolor='black')
+        ax.set_xlabel("Nombre de pesées")
+        ax.set_ylabel("Fréquence")
+        ax.set_title("Distribution des pesées par heure")
+        st.pyplot(fig)
 
-        #  2.  Scatter Plot of Expected vs. Actual Weighings:
+        # 2. Scatter Plot of Expected vs. Actual Weighings
         st.subheader("Pesées attendues vs. réelles")
-        plt.figure(figsize=(10, 6))  # Set figure size
-        plt.scatter(df_production_stats['Pesées attendues'], df_production_stats['Nombre de pesées'])
-        plt.xlabel("Pesées attendues")
-        plt.ylabel("Nombre de pesées réelles")
-        plt.title("Comparaison des pesées attendues et réelles")
-        st.pyplot(plt)
-
+        fig, ax = plt.subplots()
+        ax.scatter(df_production_stats['Pesées attendues'], df_production_stats['Nombre de pesées'])
+        ax.set_xlabel("Pesées attendues")
+        ax.set_ylabel("Nombre de pesées réelles")
+        ax.set_title("Comparaison des pesées attendues et réelles")
+        st.pyplot(fig)
 
         # Affichage des justifications WELMEC
         st.subheader("Justifications WELMEC")
@@ -140,7 +141,7 @@ if suivi_perte_matiere and suivi_acquisitions:
         st.markdown("- **Représentativité des pesées:** Comparez le nombre de pesées attendues avec le nombre de pesées réelles. Si la différence est importante, cela peut indiquer que la fréquence des pesées est insuffisante.")
         st.markdown("- **Conformité WELMEC:** Le code Python calcule les limites de tolérance WELMEC (TNE, TU1, TU2) et permet de vérifier si les pesées sont conformes aux exigences WELMEC.")
         st.write("Utilisez ce code pour analyser vos données et justifier la conformité de vos contrôles de masse nette.")
-        
+
     except ImportError as e:
         st.error(f"An error occurred while loading the Excel files: {e}. Please ensure that the 'openpyxl' library is installed.")
     except Exception as e:
