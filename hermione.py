@@ -124,10 +124,19 @@ if suivi_perte_matiere and suivi_acquisitions:
         #  3.  Box Plot of Weighing Distribution for Each Order:
         st.subheader("Distribution des Pesées par OF")
         plt.figure(figsize=(10, 6))
-        plt.boxplot(df_merged.groupby('Of')['Mesure valeur'].apply(list), labels=df_merged['Of'].unique())  # Use 'Mesure valeur'
+
+        # Select a limited number of orders for the box plot (e.g., the first 5)
+        selected_orders = df_pesées_par_of['Of'].unique()[:5]  
+
+        # Filter the data to include only selected orders
+        filtered_data = df_pesées_par_of[df_pesées_par_of['Of'].isin(selected_orders)]
+
+        # Create the box plot using the filtered data
+        plt.boxplot(filtered_data.groupby('Of')['Nombre de pesées'].apply(list), labels=filtered_data['Of'].unique())
+
         plt.xlabel("OF")
-        plt.ylabel("Poids net (g)")
-        plt.title("Distribution des pesées par ordre de fabrication")
+        plt.ylabel("Nombre de pesées")
+        plt.title("Distribution des pesées par ordre de fabrication (5 premiers OF)")
         st.pyplot(plt)
 
         # Affichage des justifications WELMEC
