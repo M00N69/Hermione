@@ -42,7 +42,10 @@ if suivi_perte_matiere and suivi_acquisitions:
     # Calcul des statistiques de la production
     df_production_stats = df_merged.groupby('Of').agg({'Qté réelle': 'sum', 'Qté lanc.': 'sum', 'Mesure valeur': ['mean', 'std']}).reset_index()
     df_production_stats.columns = ['Of', 'Qté réelle', 'Qté lanc.', 'Poids moyen (g)', 'Ecart type (g)']
-    df_production_stats['Durée production (heures)'] = (pd.to_datetime(df_production_stats['Date de fin d'OF']) - pd.to_datetime(df_production_stats['Date de fin d'OF']).dt.date).dt.total_seconds() / 3600
+
+    # Calcul de la durée de production (en heures)
+    df_production_stats['Date de fin d'OF'] = pd.to_datetime(df_production_stats['Date de fin d'OF'])
+    df_production_stats['Durée production (heures)'] = (df_production_stats['Date de fin d'OF'] - df_production_stats['Date de fin d'OF'].dt.date).dt.total_seconds() / 3600
 
     # Affichage des statistiques de production
     st.subheader("Statistiques de Production")
