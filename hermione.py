@@ -6,11 +6,13 @@ import numpy as np
 
 # Install openpyxl if it's not already installed
 try:
-    import openpyxl 
+    import openpyxl
 except ImportError:
     st.write("Installing openpyxl...")
-    !pip install openpyxl 
-    import openpyxl 
+    # Install the package using pip in Streamlit Cloud
+    # This line will install openpyxl if it's missing
+    pip.main(['install', 'openpyxl'])
+    import openpyxl
 
 st.title("Analyse de la Représentativité des Pesées sur Ligne - Conformité WELMEC")
 
