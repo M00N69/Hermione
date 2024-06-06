@@ -1,6 +1,16 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Install openpyxl if it's not already installed
+try:
+    import openpyxl 
+except ImportError:
+    st.write("Installing openpyxl...")
+    !pip install openpyxl 
+    import openpyxl 
 
 st.title("Analyse de la Représentativité des Pesées sur Ligne - Conformité WELMEC")
 
