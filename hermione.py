@@ -8,8 +8,9 @@ st.title("Analyse de la Représentativité des Pesées sur Ligne - Conformité W
 suivi_perte_matiere = st.file_uploader("Sélectionnez le fichier 'Suivi Perte Matière.xlsx'", type=['xlsx'])
 suivi_acquisitions = st.file_uploader("Sélectionnez le fichier 'Suivi Acquisitions.xlsx'", type=['xlsx'])
 
-# Chargement des fichiers si uploadés
+# Vérifiez si les fichiers sont uploadés
 if suivi_perte_matiere and suivi_acquisitions:
+    # Chargement des fichiers si uploadés
     df_perte_matiere = pd.read_excel(suivi_perte_matiere, engine='openpyxl')
     df_acquisitions = pd.read_excel(suivi_acquisitions, engine='openpyxl')
 
