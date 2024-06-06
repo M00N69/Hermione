@@ -131,10 +131,7 @@ if suivi_perte_matiere and suivi_acquisitions:
         # Filter the data to include only selected orders
         filtered_data = df_merged[df_merged['Of'].isin(selected_orders)]
 
-        # Calculate the average 'Mesure valeur' for each order
-        filtered_data = filtered_data.groupby('Of')['Mesure valeur'].mean().reset_index()
-
-        # Create the box plot using the filtered data
+        # Create the box plot directly using the 'Mesure valeur' column
         plt.boxplot(filtered_data['Mesure valeur'], labels=filtered_data['Of'].unique())
 
         plt.xlabel("OF")
