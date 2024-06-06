@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-import matplotlib.pyplot as plt
 import numpy as np
 
 st.title("Analyse de la Représentativité des Pesées sur Ligne - Conformité WELMEC")
@@ -53,7 +52,7 @@ if suivi_perte_matiere and suivi_acquisitions:
         # Calcul de la durée de production (en heures)
         df_merged['Date de fin d\'OF'] = pd.to_datetime(df_merged['Date de fin d\'OF'])
         df_production_stats['Durée production (heures)'] = (
-            df_merged.groupby('Of')['Date de fin d\'OF'].max() -
+            df_merged.groupby('Of')['Date de fin d\'OF'].max() - 
             df_merged.groupby('Of')['Date de fin d\'OF'].min()
         ).dt.total_seconds() / 3600
 
@@ -63,7 +62,7 @@ if suivi_perte_matiere and suivi_acquisitions:
 
         # Calcul du nombre de pesées attendu
         df_production_stats['Pesées attendues'] = (
-            df_pesées_par_heure.groupby('Of')['Nombre de pesées'].mean() *
+            df_pesées_par_heure.groupby('Of')['Nombre de pesées'].mean() * 
             df_production_stats['Durée production (heures)']
         ).values
 
@@ -80,20 +79,27 @@ if suivi_perte_matiere and suivi_acquisitions:
         st.subheader("Limites de Tolérance WELMEC")
         st.dataframe(df_production_stats[['Of', 'TNE (g)', 'TU1 (g)', 'TU2 (g)']])
 
-        # Histogramme des pesées
-        st.subheader("Histogramme des Pesées")
+        #  ---  Key Metrics for Assessing Sampling Representativeness --- 
+        
+        # 1. Mean Number of Weighings Per Hour:
+        mean_weighings_per_hour = df_pesées_par_heure['Nombre de pesées'].mean()
+        st.markdown("**Moyenne des pesées par heure:** {}".format(mean_weighings_per_hour))
 
-        # 1. Get the value counts:
-        value_counts = df_merged['Valeur'].value_counts().sort_index()
+        # 2. Standard Deviation of Weighings Per Hour:
+        std_weighings_per_hour = df_pesées_par_heure['Nombre de pesées'].std()
+        st.markdown("**Écart type des pesées par heure:** {}".format(std_weighings_per_hour))
 
-        # 2. Create a DataFrame with 'Valeur' and 'Count' columns:
-        histogram_data = pd.DataFrame({
-            'Valeur': value_counts.index,
-            'Count': value_counts.values
-        })
+        # 3.  Average Production Time Per Order:
+        average_production_time = df_production_stats['Durée production (heures)'].mean()
+        st.markdown("**Durée moyenne de production par OF:** {:.2f} heures".format(average_production_time))
 
-        # 3. Display the bar chart:
-        st.bar_chart(histogram_data)
+        # 4.  Percent of Orders With 'Expected Weighings' Close to Actual Weighings:
+        close_to_expected = df_production_stats[
+            abs(df_production_stats['Pesées attendues'] - df_production_stats['Nombre de pesées']) < 0.1 * df_production_stats['Pesées attendues']
+        ]
+        percentage_close = len(close_to_expected) / len(df_production_stats) * 100
+        st.markdown("**Pourcentage des OF avec un nombre de pesées proche du nombre attendu:** {:.1f}%".format(percentage_close))
+
 
         # Affichage des justifications WELMEC
         st.subheader("Justifications WELMEC")
@@ -113,7 +119,7 @@ if suivi_perte_matiere and suivi_acquisitions:
         st.markdown("- **Représentativité des pesées:** Comparez le nombre de pesées attendues avec le nombre de pesées réelles. Si la différence est importante, cela peut indiquer que la fréquence des pesées est insuffisante.")
         st.markdown("- **Conformité WELMEC:** Le code Python calcule les limites de tolérance WELMEC (TNE, TU1, TU2) et permet de vérifier si les pesées sont conformes aux exigences WELMEC.")
         st.write("Utilisez ce code pour analyser vos données et justifier la conformité de vos contrôles de masse nette.")
-
+        
     except ImportError as e:
         st.error(f"An error occurred while loading the Excel files: {e}. Please ensure that the 'openpyxl' library is installed.")
     except Exception as e:
