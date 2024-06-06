@@ -10,8 +10,8 @@ suivi_acquisitions = st.file_uploader("Sélectionnez le fichier 'Suivi Acquisiti
 
 # Chargement des fichiers si uploadés
 if suivi_perte_matiere and suivi_acquisitions:
-    df_perte_matiere = pd.read_excel(suivi_perte_matiere)
-    df_acquisitions = pd.read_excel(suivi_acquisitions)
+    df_perte_matiere = pd.read_excel(suivi_perte_matiere, engine='openpyxl')
+    df_acquisitions = pd.read_excel(suivi_acquisitions, engine='openpyxl')
 
     # Séparation de la colonne d'acquisition en date et heure
     df_acquisitions['Heure acquisition'] = pd.to_datetime(df_acquisitions['Heure acquisition'])
@@ -98,4 +98,3 @@ if suivi_perte_matiere and suivi_acquisitions:
     st.markdown("- **Représentativité des pesées:** Comparez le nombre de pesées attendues avec le nombre de pesées réelles. Si la différence est importante, cela peut indiquer que la fréquence des pesées est insuffisante.")
     st.markdown("- **Conformité WELMEC:**  Le code Python calcule les limites de tolérance WELMEC (TNE, TU1, TU2) et permet de vérifier si les pesées sont conformes aux exigences WELMEC.  ")
     st.write("Utilisez ce code pour analyser vos données et justifier la conformité de vos contrôles de masse nette.")
-
