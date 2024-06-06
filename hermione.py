@@ -12,8 +12,8 @@ suivi_acquisitions = st.file_uploader("Sélectionnez le fichier 'Suivi Acquisiti
 
 # Vérifiez si les fichiers sont uploadés
 if suivi_perte_matiere and suivi_acquisitions:
-    # Chargement des fichiers si uploadés
     try:
+        # Chargement des fichiers si uploadés
         df_perte_matiere = pd.read_excel(suivi_perte_matiere, engine='openpyxl')
         df_acquisitions = pd.read_excel(suivi_acquisitions, engine='openpyxl')
 
@@ -100,7 +100,7 @@ if suivi_perte_matiere and suivi_acquisitions:
 
         st.markdown("**Conclusions :**")
         st.markdown("- **Représentativité des pesées:** Comparez le nombre de pesées attendues avec le nombre de pesées réelles. Si la différence est importante, cela peut indiquer que la fréquence des pesées est insuffisante.")
-        st.markdown("- **Conformité WELMEC:**  Le code Python calcule les limites de tolérance WELMEC (TNE, TU1, TU2) et permet de vérifier si les pesées sont conformes aux exigences WELMEC.")
+        st.markdown("- **Conformité WELMEC:** Le code Python calcule les limites de tolérance WELMEC (TNE, TU1, TU2) et permet de vérifier si les pesées sont conformes aux exigences WELMEC.")
         st.write("Utilisez ce code pour analyser vos données et justifier la conformité de vos contrôles de masse nette.")
         
     except ImportError as e:
