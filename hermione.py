@@ -126,16 +126,19 @@ if suivi_perte_matiere and suivi_acquisitions:
         plt.figure(figsize=(10, 6))
 
         # Select a limited number of orders for the box plot (e.g., the first 5)
-        selected_orders = df_pesées_par_of['Of'].unique()[:5]  
+        selected_orders = df_merged['Of'].unique()[:5]  
 
         # Filter the data to include only selected orders
-        filtered_data = df_pesées_par_of[df_pesées_par_of['Of'].isin(selected_orders)]
+        filtered_data = df_merged[df_merged['Of'].isin(selected_orders)]
+
+        # Calculate the average 'Mesure valeur' for each order
+        filtered_data = filtered_data.groupby('Of')['Mesure valeur'].mean().reset_index()
 
         # Create the box plot using the filtered data
-        plt.boxplot(filtered_data.groupby('Of')['Nombre de pesées'].apply(list), labels=filtered_data['Of'].unique())
+        plt.boxplot(filtered_data['Mesure valeur'], labels=filtered_data['Of'].unique())
 
         plt.xlabel("OF")
-        plt.ylabel("Nombre de pesées")
+        plt.ylabel("Poids net (g)")
         plt.title("Distribution des pesées par ordre de fabrication (5 premiers OF)")
         st.pyplot(plt)
 
