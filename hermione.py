@@ -121,23 +121,27 @@ if suivi_perte_matiere and suivi_acquisitions:
         plt.title("Comparaison des pesées attendues et réelles")
         st.pyplot(plt)
 
-        #  3.  Box Plot of Weighing Distribution for Each Order:
-        st.subheader("Distribution des Pesées par OF")
-        plt.figure(figsize=(10, 6))
+        #  3.  Box Plot of Weighing Distribution for Each Order (with error handling):
+        try:
+            st.subheader("Distribution des Pesées par OF")
+            plt.figure(figsize=(10, 6))
 
-        # Select a limited number of orders for the box plot (e.g., the first 5)
-        selected_orders = df_merged['Of'].unique()[:5]  
+            # Select a limited number of orders for the box plot (e.g., the first 5)
+            selected_orders = df_merged['Of'].unique()[:5]  
 
-        # Filter the data to include only selected orders
-        filtered_data = df_merged[df_merged['Of'].isin(selected_orders)]
+            # Filter the data to include only selected orders
+            filtered_data = df_merged[df_merged['Of'].isin(selected_orders)]
 
-        # Create the box plot directly using the 'Mesure valeur' column
-        plt.boxplot(filtered_data['Mesure valeur'], labels=filtered_data['Of'].unique())
+            # Create the box plot directly using the 'Mesure valeur' column
+            plt.boxplot(filtered_data['Mesure valeur'], labels=filtered_data['Of'].unique())
 
-        plt.xlabel("OF")
-        plt.ylabel("Poids net (g)")
-        plt.title("Distribution des pesées par ordre de fabrication (5 premiers OF)")
-        st.pyplot(plt)
+            plt.xlabel("OF")
+            plt.ylabel("Poids net (g)")
+            plt.title("Distribution des pesées par ordre de fabrication (5 premiers OF)")
+            st.pyplot(plt)
+        except Exception as e:
+            st.warning(f"Erreur lors de la création du graphique de boîte à moustaches: {e}.")
+            st.write("Veuillez vérifier vos données et réessayer.")
 
         # Affichage des justifications WELMEC
         st.subheader("Justifications WELMEC")
