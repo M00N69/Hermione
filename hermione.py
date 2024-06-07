@@ -35,8 +35,8 @@ if suivi_perte_matiere and suivi_acquisitions:
         st.subheader("Nombre de pesées par heure")
         st.dataframe(df_pesées_par_heure)
 
-        # Calcul du nombre de pesées par OF
-        df_pesées_par_of = df_pesées_par_heure.groupby('Of').agg({'Nombre de pesées': 'sum'}).reset_index()
+        # Calcul du nombre de pesées par OF (Correction)
+        df_pesées_par_of = df_merged.groupby('Of').size().reset_index(name='Nombre de pesées')  # Regroupement uniquement par OF
 
         # Affichage des pesées par OF
         st.subheader("Nombre total de pesées par OF")
@@ -126,11 +126,14 @@ if suivi_perte_matiere and suivi_acquisitions:
             st.subheader("Distribution des Pesées par OF")
             plt.figure(figsize=(10, 6))
 
-            # Calculate the average 'Mesure valeur' for each order
-            average_weights = df_merged.groupby('Of')['Mesure valeur'].mean()
+            # Select a limited number of orders for the box plot (e.g., the first 5)
+            selected_orders = df_merged['Of'].unique()[:5]  
 
-            # Create the box plot directly using the average weights
-            plt.boxplot(average_weights, labels=average_weights.index)
+            # Filter the data to include only selected orders
+            filtered_data = df_merged[df_merged['Of'].isin(selected_orders)]
+
+            # Create the box plot directly using the 'Mesure valeur' column
+            plt.boxplot(filtered_data['Mesure valeur'], labels=filtered_data['Of'].unique())
 
             plt.xlabel("OF")
             plt.ylabel("Poids net (g)")
